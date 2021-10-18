@@ -55,8 +55,10 @@ func NewRepo(path string) (*Repo, error) {
 
 				var imports []string
 				for _, file := range pkg.Files {
-					for _, imp := range file.Imports {
-						imports = append(imports, strings.ReplaceAll(imp.Path.Value, `"`, ""))
+					if !strings.HasSuffix(file.Name.Name, "_test") {
+						for _, imp := range file.Imports {
+							imports = append(imports, strings.ReplaceAll(imp.Path.Value, `"`, ""))
+						}
 					}
 				}
 				repo.AddPackage(strings.TrimPrefix(p, path+"/"), imports)
