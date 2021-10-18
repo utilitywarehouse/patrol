@@ -14,6 +14,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/utilitywarehouse/patrol/patrol"
 )
 
@@ -101,7 +102,6 @@ func copy(source, destination string) error {
 				if errors.Is(err, os.ErrExist) {
 					return nil
 				}
-				fmt.Println("hey")
 				return err
 			}
 		} else {
