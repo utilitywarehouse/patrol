@@ -52,7 +52,7 @@ func (test *RepoTest) Run(t *testing.T) {
 	versions, err := os.ReadDir(commitsDir)
 	require.NoError(t, err)
 
-	var revisions []string
+	var previousCommit string
 
 	for i, v := range versions {
 		// copy all files from a "commit"
@@ -75,15 +75,17 @@ func (test *RepoTest) Run(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		revisions = append(revisions, commit.String())
+		if previousCommit != "" {
+			r, err := patrol.NewRepo(tmp)
+			require.NoError(t, err)
+
+			changes, err := r.ChangesFrom(previousCommit)
+			require.NoError(t, err)
+			assert.Equal(t, test.ExpectedChangedPackages, changes, test.Name+": expected changes do not match")
+		}
+
+		previousCommit = commit.String()
 	}
-
-	r, err := patrol.NewRepo(tmp)
-	require.NoError(t, err)
-
-	changes, err := r.ChangesFrom(revisions[0])
-	require.NoError(t, err)
-	assert.Equal(t, test.ExpectedChangedPackages, changes, test.Name+": expected changes do not match")
 }
 
 type RepoTests []RepoTest
