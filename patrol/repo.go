@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"golang.org/x/mod/modfile"
 )
 
@@ -84,7 +86,7 @@ func (r *Repo) AddPackage(path string, imports []string) {
 	if !exists {
 		pkg = &Package{
 			Name:         pkgName,
-			PartOfModule: r.OwnsPackage(path),
+			PartOfModule: r.OwnsPackage(pkgName),
 		}
 		r.Packages[pkgName] = pkg
 	}
@@ -113,7 +115,87 @@ func (r *Repo) AddDependant(dependant *Package, dependencyName string) {
 }
 
 func (r *Repo) ChangesFrom(revision string) ([]string, error) {
-	return nil, nil
+	err := r.detectInternalChangesFrom(revision)
+	if err != nil {
+		return nil, err
+	}
+
+	var changedOwnedPackages []string
+	for _, pkg := range r.Packages {
+		if pkg.PartOfModule && pkg.Changed {
+			changedOwnedPackages = append(changedOwnedPackages, pkg.Name)
+		}
+	}
+
+	return changedOwnedPackages, nil
+}
+
+func (r *Repo) detectInternalChangesFrom(revision string) error {
+	// git diff go files
+	repo, err := git.PlainOpen(r.path)
+	if err != nil {
+		return err
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return err
+	}
+
+	now, err := repo.CommitObject(head.Hash())
+	if err != nil {
+		return err
+	}
+
+	nowTree, err := now.Tree()
+	if err != nil {
+		return err
+	}
+
+	ref := plumbing.NewHash(revision)
+	then, err := repo.CommitObject(ref)
+	if err != nil {
+		return err
+	}
+
+	thenTree, err := then.Tree()
+	if err != nil {
+		return err
+	}
+
+	diff, err := nowTree.Diff(thenTree)
+	if err != nil {
+		return err
+	}
+
+	for _, change := range diff {
+		if !strings.HasSuffix(change.From.Name, ".go") {
+			continue
+		}
+
+		pkgName := r.ModuleName() + "/" + filepath.Dir(change.From.Name)
+		r.flagPackageAsChanged(pkgName)
+	}
+
+	return nil
+}
+
+func (r *Repo) flagPackageAsChanged(name string) {
+	pkg, exists := r.Packages[name]
+	if !exists {
+		return
+	}
+
+	if pkg.Changed {
+		// assume change was already acked and save
+		// some computation
+		return
+	}
+
+	pkg.Changed = true
+	for _, d := range pkg.Dependants {
+		d.Changed = true
+	}
 }
 
 func (r *Repo) ModuleName() string {
@@ -128,6 +210,7 @@ type Package struct {
 	Name         string
 	PartOfModule bool
 	Dependants   []*Package
+	Changed      bool
 }
 
 func directoryShouldBeIgnored(path string) bool {

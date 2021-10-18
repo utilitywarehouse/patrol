@@ -12,7 +12,7 @@ func TestRepo(t *testing.T) {
 			TestAgainstRevision: "HEAD~1",
 			ExpectedChangedPackages: []string{
 				"github.com/utilitywarehouse/internalchange/internal/bar",
-				"github.com/utilitywarehouse/internalchange/internal/foo",
+				"github.com/utilitywarehouse/internalchange/pkg/foo",
 			},
 		},
 	}

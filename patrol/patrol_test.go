@@ -52,6 +52,8 @@ func (test *RepoTest) Run(t *testing.T) {
 	versions, err := os.ReadDir(commitsDir)
 	require.NoError(t, err)
 
+	var revisions []string
+
 	for i, v := range versions {
 		// copy all files from a "commit"
 		err = copy(filepath.Join(commitsDir, v.Name()), tmp)
@@ -64,7 +66,7 @@ func (test *RepoTest) Run(t *testing.T) {
 		require.NoError(t, err)
 
 		// make a new commit
-		_, err = worktree.Commit(fmt.Sprintf("commit #%v", i+1), &git.CommitOptions{
+		commit, err := worktree.Commit(fmt.Sprintf("commit #%v", i+1), &git.CommitOptions{
 			Author: &object.Signature{
 				Name:  "patrol test",
 				Email: "patrol@test.me",
@@ -72,14 +74,16 @@ func (test *RepoTest) Run(t *testing.T) {
 			},
 		})
 		require.NoError(t, err)
+
+		revisions = append(revisions, commit.String())
 	}
 
 	r, err := patrol.NewRepo(tmp)
 	require.NoError(t, err)
 
-	changes, err := r.ChangesFrom(test.TestAgainstRevision)
+	changes, err := r.ChangesFrom(revisions[0])
 	require.NoError(t, err)
-	assert.Equal(t, test.ExpectedChangedPackages, changes)
+	assert.Equal(t, test.ExpectedChangedPackages, changes, test.Name+": expected changes do not match")
 }
 
 type RepoTests []RepoTest
