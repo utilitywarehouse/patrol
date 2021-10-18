@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/utilitywarehouse/patrol/patrol"
 )
@@ -72,8 +73,12 @@ func (test *RepoTest) Run(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	_, err = patrol.NewRepo(tmp)
+	r, err := patrol.NewRepo(tmp)
 	require.NoError(t, err)
+
+	changes, err := r.ChangesFrom(test.TestAgainstRevision)
+	require.NoError(t, err)
+	assert.Equal(t, test.ExpectedChangedPackages, changes)
 }
 
 type RepoTests []RepoTest

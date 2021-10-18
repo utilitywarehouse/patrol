@@ -9,8 +9,11 @@ func TestRepo(t *testing.T) {
 			Name:           "change within module",
 			Description: "A change to a package within the same module\n" +
 				"should flag depending packages as changed",
-			TestAgainstRevision:     "HEAD~1",
-			ExpectedChangedPackages: []string{},
+			TestAgainstRevision: "HEAD~1",
+			ExpectedChangedPackages: []string{
+				"github.com/utilitywarehouse/internalchange/internal/bar",
+				"github.com/utilitywarehouse/internalchange/internal/foo",
+			},
 		},
 	}
 
