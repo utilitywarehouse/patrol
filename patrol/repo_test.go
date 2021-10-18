@@ -15,6 +15,16 @@ func TestRepo(t *testing.T) {
 				"github.com/utilitywarehouse/internalchange/pkg/foo",
 			},
 		},
+		RepoTest{
+			TestdataFolder: "modules",
+			Name:           "change in go modules dependency",
+			Description: "A change to a go modules dependency\n" +
+				"should flag depending packages as changed",
+			TestAgainstRevision: "HEAD~1",
+			ExpectedChangedPackages: []string{
+				"github.com/utilitywarehouse/modules",
+			},
+		},
 	}
 
 	tests.Run(t)

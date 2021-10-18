@@ -81,7 +81,7 @@ func (test *RepoTest) Run(t *testing.T) {
 
 			changes, err := r.ChangesFrom(previousCommit)
 			require.NoError(t, err)
-			assert.Equal(t, test.ExpectedChangedPackages, changes, test.Name+": expected changes do not match")
+			assert.ElementsMatch(t, test.ExpectedChangedPackages, changes, test.Name+": expected changes do not match")
 		}
 
 		previousCommit = commit.String()
