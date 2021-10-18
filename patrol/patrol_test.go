@@ -88,7 +88,7 @@ func (test *RepoTest) Run(t *testing.T) {
 func expectedChanges(t *testing.T, dir string) []string {
 	file, err := os.Open(filepath.Join(dir, "changes.patrol"))
 	require.NoError(t, err)
-	defer file.Close()
+	defer file.Close() // nolint
 
 	var changes []string
 	scanner := bufio.NewScanner(file)
