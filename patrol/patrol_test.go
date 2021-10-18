@@ -1,14 +1,19 @@
 package patrol_test
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/require"
+	"github.com/utilitywarehouse/patrol/patrol"
 )
 
 type RepoTest struct {
@@ -30,11 +35,45 @@ type RepoTest struct {
 }
 
 func (test *RepoTest) Run(t *testing.T) {
+	// create tmp dir for the test
 	tmp, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 
 	fmt.Println(tmp)
-	err = copy(filepath.Join("testdata", test.TestdataFolder), tmp)
+
+	// init repo
+	repo, err := git.PlainInit(tmp, false)
+	require.NoError(t, err)
+
+	// loop over all the commits for this test case
+	commitsDir := filepath.Join("testdata", test.TestdataFolder, "commits")
+	versions, err := os.ReadDir(commitsDir)
+	require.NoError(t, err)
+
+	for i, v := range versions {
+		// copy all files from a "commit"
+		err = copy(filepath.Join(commitsDir, v.Name()), tmp)
+		require.NoError(t, err)
+
+		worktree, err := repo.Worktree()
+		require.NoError(t, err)
+
+		err = worktree.AddGlob(".")
+		require.NoError(t, err)
+
+		// make a new commit
+		_, err = worktree.Commit(fmt.Sprintf("commit #%v", i+1), &git.CommitOptions{
+			Author: &object.Signature{
+				Name:  "patrol test",
+				Email: "patrol@test.me",
+				When:  time.Now(),
+			},
+		})
+		require.NoError(t, err)
+	}
+
+	_, err = patrol.NewRepo(tmp)
+	require.NoError(t, err)
 }
 
 type RepoTests []RepoTest
@@ -52,7 +91,14 @@ func copy(source, destination string) error {
 			return nil
 		}
 		if info.IsDir() {
-			return os.Mkdir(filepath.Join(destination, relPath), 0755)
+			err := os.Mkdir(filepath.Join(destination, relPath), 0755)
+			if err != nil {
+				if errors.Is(err, os.ErrExist) {
+					return nil
+				}
+				fmt.Println("hey")
+				return err
+			}
 		} else {
 			data, err1 := ioutil.ReadFile(filepath.Join(source, relPath))
 			if err1 != nil {
@@ -60,6 +106,8 @@ func copy(source, destination string) error {
 			}
 			return ioutil.WriteFile(filepath.Join(destination, relPath), data, 0777)
 		}
+
+		return nil
 	})
 	return err
 }
