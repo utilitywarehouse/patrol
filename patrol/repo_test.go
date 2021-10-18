@@ -13,4 +13,6 @@ func TestRepo(t *testing.T) {
 			ExpectedChangedPackages: []string{},
 		},
 	}
+
+	tests.Run(t)
 }
