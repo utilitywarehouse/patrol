@@ -1,6 +1,7 @@
 package patrol_test
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -27,13 +28,6 @@ type RepoTest struct {
 
 	// description of the test, what are trying to assess?
 	Description string
-
-	// the git revision against which changes should be detected
-	TestAgainstRevision string
-
-	// the list of expected packages that should be flagged as changed between
-	// HEAD and TestAgainstRevision
-	ExpectedChangedPackages []string
 }
 
 func (test *RepoTest) Run(t *testing.T) {
@@ -75,17 +69,36 @@ func (test *RepoTest) Run(t *testing.T) {
 		})
 		require.NoError(t, err)
 
+		// avoid running patrol on first commit, there was nothing before
 		if previousCommit != "" {
+			expected := expectedChanges(t, tmp)
+
 			r, err := patrol.NewRepo(tmp)
 			require.NoError(t, err)
 
 			changes, err := r.ChangesFrom(previousCommit)
 			require.NoError(t, err)
-			assert.ElementsMatch(t, test.ExpectedChangedPackages, changes, test.Name+": expected changes do not match")
+			assert.ElementsMatch(t, expected, changes, test.Name+": expected changes do not match")
 		}
 
 		previousCommit = commit.String()
 	}
+}
+
+func expectedChanges(t *testing.T, dir string) []string {
+	file, err := os.Open(filepath.Join(dir, "changes.patrol"))
+	require.NoError(t, err)
+	defer file.Close()
+
+	var changes []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		changes = append(changes, scanner.Text())
+	}
+
+	require.NoError(t, scanner.Err())
+
+	return changes
 }
 
 type RepoTests []RepoTest
