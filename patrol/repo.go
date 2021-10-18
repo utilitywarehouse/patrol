@@ -112,6 +112,10 @@ func (r *Repo) AddDependant(dependant *Package, dependencyName string) {
 	dependency.Dependants = append(dependency.Dependants, dependant)
 }
 
+func (r *Repo) ChangesFrom(revision string) ([]string, error) {
+	return nil, nil
+}
+
 func (r *Repo) ModuleName() string {
 	return r.Module.Module.Mod.Path
 }
