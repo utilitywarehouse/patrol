@@ -6,12 +6,7 @@ import (
 	"os"
 
 	"github.com/utilitywarehouse/patrol/patrol"
-	"golang.org/x/mod/modfile"
 )
-
-type Repo struct {
-	Module *modfile.File
-}
 
 func main() {
 	revision := flag.String("from", "", "revision that should be used to detected "+
