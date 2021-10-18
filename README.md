@@ -108,5 +108,5 @@ like Patrol. You can take a look at any of the case defined in
   one should contain a `changes.patrol` file that lists the output you expect
   from Patrol for that test (don't worry, order doesn't matter here). You can
   check this
-  [example](patrol/testdata/internalchanges/commits/2/changes.patrol).
+  [example](patrol/testdata/internalchange/commits/2/changes.patrol).
 - add a new test case in [patrol/repo\_test.go](patrol/repo_test.go)
