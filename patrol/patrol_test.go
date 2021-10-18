@@ -109,7 +109,7 @@ func copy(source, destination string) error {
 			if err1 != nil {
 				return err1
 			}
-			return ioutil.WriteFile(filepath.Join(destination, relPath), data, 0777)
+			return ioutil.WriteFile(filepath.Join(destination, relPath), data, 0600)
 		}
 
 		return nil
