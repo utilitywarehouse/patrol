@@ -30,7 +30,7 @@ go install github.com/utilitywarehouse/patrol
 ```
 
 and you can use it like this
-``` patrol -from={commit hash} .  ```
+``` patrol -from={commit hash} {path to your repo}  ```
 
 This is an example run against [My Services
 monorepo](https://github.com/utilitywarehouse/my-services-mono):
