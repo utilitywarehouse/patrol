@@ -1,6 +1,6 @@
 # Patrol
 
-*Patrol* is a utility to help you understand what packages within a Go module
+**Patrol** is a utility to help you understand what packages within a Go module
 changed between commits. It was created to be used within CI pipelines to only
 build what needs to be built, but maybe someone else can find a cool use for
 this :). Patrol currently detects changes in:
