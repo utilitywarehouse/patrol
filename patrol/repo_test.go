@@ -13,6 +13,7 @@ func TestRepo(t *testing.T) {
 			ExpectedChangedPackages: []string{
 				"github.com/utilitywarehouse/internalchange/internal/bar",
 				"github.com/utilitywarehouse/internalchange/pkg/foo",
+				"github.com/utilitywarehouse/internalchange/pkg/cat",
 			},
 		},
 		RepoTest{
@@ -23,6 +24,16 @@ func TestRepo(t *testing.T) {
 			TestAgainstRevision: "HEAD~1",
 			ExpectedChangedPackages: []string{
 				"github.com/utilitywarehouse/modules",
+			},
+		},
+		RepoTest{
+			TestdataFolder: "vendoring",
+			Name:           "change in vendored dependencies",
+			Description: "A change to a vendored dependency\n" +
+				"should flag depending packages as changed",
+			TestAgainstRevision: "HEAD~1",
+			ExpectedChangedPackages: []string{
+				"github.com/utilitywarehouse/vendoring",
 			},
 		},
 	}

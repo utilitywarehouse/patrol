@@ -3,6 +3,7 @@ package patrol
 import (
 	"go/parser"
 	"go/token"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -120,6 +121,11 @@ func (r *Repo) ChangesFrom(revision string) ([]string, error) {
 		return nil, err
 	}
 
+	err = r.detectGoModulesChanges(revision)
+	if err != nil {
+		return nil, err
+	}
+
 	var changedOwnedPackages []string
 	for _, pkg := range r.Packages {
 		if pkg.PartOfModule && pkg.Changed {
@@ -173,8 +179,59 @@ func (r *Repo) detectInternalChangesFrom(revision string) error {
 			continue
 		}
 
-		pkgName := r.ModuleName() + "/" + filepath.Dir(change.From.Name)
+		var pkgName string
+		if strings.HasPrefix(change.From.Name, "vendor/") {
+			pkgName = strings.TrimPrefix(filepath.Dir(change.From.Name), "vendor/")
+		}
+
+		if pkgName == "" {
+			pkgName = r.ModuleName() + "/" + filepath.Dir(change.From.Name)
+		}
+
 		r.flagPackageAsChanged(pkgName)
+	}
+
+	return nil
+}
+
+func (r *Repo) detectGoModulesChanges(revision string) error {
+	// get old go.mod
+	// find differences with current one
+	repo, err := git.PlainOpen(r.path)
+	if err != nil {
+		return err
+	}
+
+	ref := plumbing.NewHash(revision)
+	then, err := repo.CommitObject(ref)
+	if err != nil {
+		return err
+	}
+
+	file, err := then.File("go.mod")
+	if err != nil {
+		return err
+	}
+
+	reader, err := file.Reader()
+	if err != nil {
+		return err
+	}
+	defer reader.Close()
+
+	b, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+
+	mod, err := modfile.Parse(filepath.Join(r.path, "go.mod"), b, nil)
+	if err != nil {
+		return err
+	}
+
+	differentModules := goModDifferences(mod, r.Module)
+	for _, module := range differentModules {
+		r.flagPackageAsChanged(module)
 	}
 
 	return nil
@@ -192,10 +249,10 @@ func (r *Repo) flagPackageAsChanged(name string) {
 		return
 	}
 
-	pkg.Changed = true
 	for _, d := range pkg.Dependants {
-		d.Changed = true
+		r.flagPackageAsChanged(d.Name)
 	}
+	pkg.Changed = true
 }
 
 func (r *Repo) ModuleName() string {
@@ -215,4 +272,53 @@ type Package struct {
 
 func directoryShouldBeIgnored(path string) bool {
 	return strings.Contains(path, ".git")
+}
+
+// goModDifferences returns the list of packages name that were added, removed
+// and/or updated between the two go.mod files
+func goModDifferences(a, b *modfile.File) []string {
+	differences := map[string]interface{}{} // keeping a map of unique differences
+	// map is [package name]: version
+	oldRequires := map[string]string{}
+	for _, r := range a.Require {
+		oldRequires[r.Mod.Path] = r.Mod.Version
+	}
+
+	newRequires := map[string]string{}
+	for _, r := range b.Require {
+		newRequires[r.Mod.Path] = r.Mod.Version
+	}
+
+	for oldPkg, oldVersion := range oldRequires {
+		newVersion, exists := newRequires[oldPkg]
+		if !exists {
+			differences[oldPkg] = struct{}{}
+			continue
+		}
+
+		if oldVersion != newVersion {
+			differences[oldPkg] = struct{}{}
+			continue
+		}
+	}
+
+	for newPkg, newVersion := range newRequires {
+		oldVersion, exists := oldRequires[newPkg]
+		if !exists {
+			differences[newPkg] = struct{}{}
+			continue
+		}
+
+		if oldVersion != newVersion {
+			differences[newPkg] = struct{}{}
+			continue
+		}
+	}
+
+	var results []string
+	for pkg := range differences {
+		results = append(results, pkg)
+	}
+
+	return results
 }
