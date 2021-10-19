@@ -32,8 +32,7 @@ go install github.com/utilitywarehouse/patrol
 and you can use it like this
 ``` patrol -from={commit hash} {path to your repo}  ```
 
-This is an example run against [My Services
-monorepo](https://github.com/utilitywarehouse/my-services-mono):
+This is an example run against one of our teams monorepo:
 
 ```
 $ patrol -from=0a359e246ba3c7c76b0ad0e1d734ae103455b7a9 .
