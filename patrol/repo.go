@@ -160,8 +160,12 @@ func (r *Repo) detectInternalChangesFrom(revision string) error {
 		return err
 	}
 
-	ref := plumbing.NewHash(revision)
-	then, err := repo.CommitObject(ref)
+	ref, err := repo.ResolveRevision(plumbing.Revision(revision))
+	if err != nil {
+		return err
+	}
+
+	then, err := repo.CommitObject(*ref)
 	if err != nil {
 		return err
 	}
@@ -204,8 +208,12 @@ func (r *Repo) detectGoModulesChanges(revision string) error {
 		return err
 	}
 
-	ref := plumbing.NewHash(revision)
-	then, err := repo.CommitObject(ref)
+	ref, err := repo.ResolveRevision(plumbing.Revision(revision))
+	if err != nil {
+		return err
+	}
+
+	then, err := repo.CommitObject(*ref)
 	if err != nil {
 		return err
 	}
