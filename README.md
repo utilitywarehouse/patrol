@@ -71,7 +71,6 @@ import (
 )
 
 func main() {
-
 	repo, err := patrol.NewRepo("path/to/your/repo")
 	if err != nil {
 		panic(err)
