@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - uses: utilitywarehouse/setup-go@main
+      - uses: utilitywarehouse/actions-go/setup@main
         with:
           go-version: '^1.17'
       - name: Lint
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: utilitywarehouse/setup-go@main
+      - uses: utilitywarehouse/actions-go/setup@main
         with:
           go-version: '^1.17'
       - name: test
