@@ -34,6 +34,12 @@ func TestRepo(t *testing.T) {
 			Description: "A change to a go modules dependency\n" +
 				"should flag depending packages as changed",
 		},
+		RepoTest{
+			TestdataFolder: "alias",
+			Name:           "change in go modules dependency that was aliased",
+			Description: "A change to a go modules dependency\n" +
+				"should flag depending packages as changed",
+		},
 	}
 
 	tests.Run(t)
