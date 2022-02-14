@@ -28,6 +28,18 @@ func TestRepo(t *testing.T) {
 			Description: "A change to package x that is being tested " +
 				"using x_test package should not result in a stack overflow :D",
 		},
+		RepoTest{
+			TestdataFolder: "submodules",
+			Name:           "change in go modules dependency sub package",
+			Description: "A change to a go modules dependency\n" +
+				"should flag depending packages as changed",
+		},
+		RepoTest{
+			TestdataFolder: "alias",
+			Name:           "change in go modules dependency that was aliased",
+			Description: "A change to a go modules dependency\n" +
+				"should flag depending packages as changed",
+		},
 	}
 
 	tests.Run(t)

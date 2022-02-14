@@ -35,8 +35,6 @@ func (test *RepoTest) Run(t *testing.T) {
 	tmp, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 
-	fmt.Println(tmp)
-
 	// init repo
 	repo, err := git.PlainInit(tmp, false)
 	require.NoError(t, err)
@@ -105,7 +103,9 @@ type RepoTests []RepoTest
 
 func (tests RepoTests) Run(t *testing.T) {
 	for _, test := range tests {
-		test.Run(t)
+		t.Run(test.Name, func(t *testing.T) {
+			test.Run(t)
+		})
 	}
 }
 

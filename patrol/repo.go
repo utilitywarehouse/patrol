@@ -151,7 +151,30 @@ func (r *Repo) addPackage(path string, imports []string) {
 		}
 		r.addDependant(pkg, dependency)
 		alreadyProcessedImports[dependency] = struct{}{}
+
+		// if the dependency is part of an external dependency (defined in go.mod)
+		// add the parent module as a dependency as well so that a simple version
+		// change would mark this package as changed
+		if parent, ok := r.externalModule(dependency); ok {
+			if _, alreadyProcessed := alreadyProcessedImports[parent]; alreadyProcessed {
+				continue
+			}
+			r.addDependant(pkg, parent)
+			alreadyProcessedImports[parent] = struct{}{}
+		}
 	}
+}
+
+// externalModule checks if the given package is part of one of the modules required
+// as dependencies in go.mod. If it is it returns the name of the parent
+// package and true.
+func (r *Repo) externalModule(pkg string) (string, bool) {
+	for _, req := range r.Module.Require {
+		if strings.HasPrefix(pkg, req.Mod.Path) {
+			return req.Mod.Path, true
+		}
+	}
+	return "", false
 }
 
 // addDependant adds dependant as one of the dependants of the package
