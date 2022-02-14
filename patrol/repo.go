@@ -155,7 +155,7 @@ func (r *Repo) addPackage(path string, imports []string) {
 		// if the dependency is part of an external dependency (defined in go.mod)
 		// add the parent module as a dependency as well so that a simple version
 		// change would mark this package as changed
-		if parent, ok := r.isGoMod(dependency); ok {
+		if parent, ok := r.externalModule(dependency); ok {
 			if _, alreadyProcessed := alreadyProcessedImports[parent]; alreadyProcessed {
 				continue
 			}
@@ -165,10 +165,10 @@ func (r *Repo) addPackage(path string, imports []string) {
 	}
 }
 
-// isGoMod checks if the given package is part of one of the modules required
+// externalModule checks if the given package is part of one of the modules required
 // as dependencies in go.mod. If it is it returns the name of the parent
 // package and true.
-func (r *Repo) isGoMod(pkg string) (string, bool) {
+func (r *Repo) externalModule(pkg string) (string, bool) {
 	for _, req := range r.Module.Require {
 		if strings.HasPrefix(pkg, req.Mod.Path) {
 			return req.Mod.Path, true
