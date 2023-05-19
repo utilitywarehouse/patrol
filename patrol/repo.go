@@ -309,7 +309,12 @@ func (r *Repo) getGoModFromRevision(revision string) (*modfile.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer reader.Close()
+
+	defer func() {
+		if err := reader.Close(); err != nil {
+			panic(err)
+		}
+	}()
 
 	b, err := ioutil.ReadAll(reader)
 	if err != nil {
