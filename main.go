@@ -12,6 +12,8 @@ func main() {
 	revision := flag.String("from", "", "revision that should be used to detected "+
 		"changes in HEAD.\nE.g.: -from=a0e002f951f56d53d552f9427b3331b11ea66e92")
 
+	allFiles := flag.Bool("all-files", false, "detect changes in all files, not just go files")
+
 	flag.Parse()
 
 	args := flag.Args()
@@ -34,7 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	changes, err := repo.ChangesFrom(*revision)
+	changes, err := repo.ChangesFrom(*revision, *allFiles)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %s\n", err.Error())
 		os.Exit(1)
