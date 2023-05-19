@@ -4,6 +4,7 @@ import (
 	"go/parser"
 	"go/token"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -312,7 +313,7 @@ func (r *Repo) getGoModFromRevision(revision string) (*modfile.File, error) {
 
 	defer func() {
 		if err := reader.Close(); err != nil {
-			panic(err)
+			log.Println("failed to close reader:", err)
 		}
 	}()
 
