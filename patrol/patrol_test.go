@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-git/go-git/v5"
+	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,6 +28,9 @@ type RepoTest struct {
 
 	// description of the test, what are trying to assess?
 	Description string
+
+	// is this test for go files only or for all files?
+	AllFiles bool
 }
 
 func (test *RepoTest) Run(t *testing.T) {
@@ -74,7 +77,7 @@ func (test *RepoTest) Run(t *testing.T) {
 			r, err := patrol.NewRepo(tmp)
 			require.NoError(t, err)
 
-			changes, err := r.ChangesFrom(previousCommit)
+			changes, err := r.ChangesFrom(previousCommit, test.AllFiles)
 			require.NoError(t, err)
 			assert.ElementsMatch(t, expected, changes, test.Name+": expected changes do not match")
 		}

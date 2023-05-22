@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/go-git/go-git/v5"
+	git "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"golang.org/x/mod/modfile"
 )
@@ -93,9 +93,9 @@ func NewRepo(path string) (*Repo, error) {
 // packages in vendor/) that changed since the given revision. A package will
 // be flagged as change if any file within the package itself changed or if any
 // packages it imports (whether local, vendored or external modules) changed
-// since the given revision.
-func (r *Repo) ChangesFrom(revision string) ([]string, error) {
-	err := r.detectInternalChangesFrom(revision)
+// since the given revision. If allChanges is false it will be only concerned about changes in .go files.
+func (r *Repo) ChangesFrom(revision string, allChanges bool) ([]string, error) {
+	err := r.detectInternalChangesFrom(revision, allChanges)
 	if err != nil {
 		return nil, err
 	}
@@ -194,9 +194,11 @@ func (r *Repo) addDependant(dependant *Package, dependencyName string) {
 }
 
 // detectInternalChangesFrom will run a git diff (revision...HEAD) and flag as
-// changed any packages (part of the module in repo or vendored packages) that
-// have *.go files that are part of the that diff and packages that depend on them
-func (r *Repo) detectInternalChangesFrom(revision string) error {
+// changed any packages (part of the module in the repo or vendored packages) that
+// have files that are part of that diff and packages that depend on them. If allFiles
+// is set to true, it checks for changes in all file types. If false, it only checks for
+// changes in *.go files.
+func (r *Repo) detectInternalChangesFrom(revision string, allFiles bool) error {
 	repo, err := git.PlainOpen(r.path)
 	if err != nil {
 		return err
@@ -243,8 +245,8 @@ func (r *Repo) detectInternalChangesFrom(revision string) error {
 	}
 
 	for _, change := range diff {
-		// we're only interested in Go files
-		if !strings.HasSuffix(change.From.Name, ".go") {
+		if !allFiles && !strings.HasSuffix(change.From.Name, ".go") {
+			// we're only interested in Go files
 			continue
 		}
 
@@ -257,7 +259,11 @@ func (r *Repo) detectInternalChangesFrom(revision string) error {
 
 		// package is part of our module
 		if pkgName == "" {
-			pkgName = r.ModuleName() + "/" + filepath.Dir(change.From.Name)
+			if allFiles {
+				pkgName = r.ModuleName()
+			} else {
+				pkgName = r.ModuleName() + "/" + filepath.Dir(change.From.Name)
+			}
 		}
 
 		r.flagPackageAsChanged(pkgName)
