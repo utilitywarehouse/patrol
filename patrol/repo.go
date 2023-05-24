@@ -245,7 +245,8 @@ func (r *Repo) detectInternalChangesFrom(revision string, allFiles bool) error {
 	}
 
 	for _, change := range diff {
-		if !allFiles && !strings.HasSuffix(change.From.Name, ".go") {
+		goFile := strings.HasSuffix(change.From.Name, ".go")
+		if !allFiles && !goFile {
 			// we're only interested in Go files
 			continue
 		}
@@ -259,10 +260,16 @@ func (r *Repo) detectInternalChangesFrom(revision string, allFiles bool) error {
 
 		// package is part of our module
 		if pkgName == "" {
-			if allFiles {
-				pkgName = r.ModuleName()
-			} else {
+			if goFile {
+				// go files are always in packages
 				pkgName = r.ModuleName() + "/" + filepath.Dir(change.From.Name)
+			}
+			if allFiles && !goFile {
+				// Non go files belong to the closest package
+				pkgName, err = r.closestPackageForFileInModule(change.From.Name)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -270,6 +277,27 @@ func (r *Repo) detectInternalChangesFrom(revision string, allFiles bool) error {
 	}
 
 	return nil
+}
+
+// closestPackageForFileInModule returns the closest go package path for the given file
+// it will return the module name if no package is found
+func (r *Repo) closestPackageForFileInModule(fileName string) (string, error) {
+	currentDir := filepath.Dir(fileName)
+	for currentDir != "." {
+		files, err := os.ReadDir(r.path + "/" + currentDir)
+		if err != nil {
+			return "", err
+		}
+
+		for _, f := range files {
+			if strings.HasSuffix(f.Name(), ".go") {
+				return r.ModuleName() + "/" + currentDir, nil
+			}
+		}
+
+		currentDir = filepath.Dir(currentDir)
+	}
+	return r.ModuleName(), nil
 }
 
 // detectGoModulesChanges finds differences in dependencies required by

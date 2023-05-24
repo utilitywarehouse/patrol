@@ -53,6 +53,13 @@ func TestRepo(t *testing.T) {
 				"should flag a package as changed",
 			AllFiles: true,
 		},
+		RepoTest{
+			TestdataFolder: "nestedassets",
+			Name:           "change in files that are not go source files, nested",
+			Description: "A change to a file that is not a go source file\n" +
+				"should flag a sub package as changed",
+			AllFiles: true,
+		},
 	}
 
 	tests.Run(t)
