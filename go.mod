@@ -6,7 +6,7 @@ require (
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/magefile/mage v1.11.0
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/mod v0.5.1
+	golang.org/x/mod v0.12.0
 )
 
 require (
