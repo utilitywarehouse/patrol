@@ -7,13 +7,18 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
       - name: Checkout
-        uses: actions/checkout@v2
-      - uses: utilitywarehouse/actions-go/setup@main
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
+      - uses: utilitywarehouse/actions-go/setup@8271b3b140421b8839765fb397baba8510e50c4d # main
         with:
           go-version: '^1.20'
       - name: Lint
-        uses: magefile/mage-action@v1
+        uses: magefile/mage-action@0a2bfd2ca891da3552ae39be755aecdce60ed1bc # v1.7.0
         with:
           version: latest
           args: lint
@@ -21,12 +26,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: utilitywarehouse/actions-go/setup@main
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
+      - uses: utilitywarehouse/actions-go/setup@8271b3b140421b8839765fb397baba8510e50c4d # main
         with:
           go-version: '^1.20'
       - name: test
-        uses: magefile/mage-action@v1
+        uses: magefile/mage-action@0a2bfd2ca891da3552ae39be755aecdce60ed1bc # v1.7.0
         with:
           version: latest
           args: test
