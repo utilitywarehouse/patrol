@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/utilitywarehouse/patrol/patrol"
+	"github.com/shangardezi/patrol/patrol"
 )
 
 type RepoTest struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/utilitywarehouse/exportedtesting/foo"
+	"github.com/shangardezi/exportedtesting/foo"
 )
 
 func TestFoo(t *testing.T) {

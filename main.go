@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/utilitywarehouse/patrol/patrol"
+	"github.com/shangardezi/patrol/patrol"
 )
 
 func main() {
