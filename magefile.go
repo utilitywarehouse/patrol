@@ -15,7 +15,7 @@ import (
 // subdirectories
 func Lint() error {
 	linter := sh.OutCmd(filepath.Join(RepoRoot(), "bin", "golangci-lint"))
-	version := "1.52.2"
+	version := "2.7.2"
 
 	currentVersion, err := linter("--version")
 	if err != nil || !strings.Contains(currentVersion, version) {
@@ -26,7 +26,7 @@ func Lint() error {
 		}
 	}
 
-	out, err := linter("run", "--deadline=2m", "--config="+RepoRoot()+"/.golangci.yml", "./...")
+	out, err := linter("run", "--timeout=2m", "--config="+RepoRoot()+"/.golangci.yml", "./...")
 	if out != "" {
 		fmt.Println(out)
 	}
