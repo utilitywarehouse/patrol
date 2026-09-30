@@ -19,6 +19,14 @@ func TestRepo(t *testing.T) {
 			AllFiles: false,
 		},
 		RepoTest{
+			TestdataFolder: "prefixcollision",
+			Name:           "change in go modules dependency whose path is prefixed by another dependency",
+			Description: "A change to a go modules dependency should flag depending packages as changed,\n" +
+				"even when another required module's path is a prefix of the changed one\n" +
+				"(e.g. ordering-platform is a prefix of ordering-platform-contracts).",
+			AllFiles: false,
+		},
+		RepoTest{
 			TestdataFolder: "vendoring",
 			Name:           "change in vendored dependencies",
 			Description: "A change to a vendored dependency\n" +
