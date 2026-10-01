@@ -168,14 +168,23 @@ func (r *Repo) addPackage(path string, imports []string) {
 
 // externalModule checks if the given package is part of one of the modules required
 // as dependencies in go.mod. If it is it returns the name of the parent
-// package and true.
+// package and true. When several modules match it returns the one with the
+// longest path, so that a module whose path is a prefix of another (e.g.
+// ".../ordering-platform" vs ".../ordering-platform-contracts") does not swallow
+// the more specific one.
 func (r *Repo) externalModule(pkg string) (string, bool) {
+	var match string
+	var found bool
 	for _, req := range r.Module.Require {
-		if strings.HasPrefix(pkg, req.Mod.Path) {
-			return req.Mod.Path, true
+		path := req.Mod.Path
+		if pkg == path || strings.HasPrefix(pkg, path+"/") {
+			if len(path) > len(match) {
+				match = path
+				found = true
+			}
 		}
 	}
-	return "", false
+	return match, found
 }
 
 // addDependant adds dependant as one of the dependants of the package
