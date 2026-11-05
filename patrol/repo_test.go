@@ -34,6 +34,14 @@ func TestRepo(t *testing.T) {
 			AllFiles: false,
 		},
 		RepoTest{
+			TestdataFolder: "vendoredmodulecycle",
+			Name:           "change in a vendored module whose root package imports its own subpackage",
+			Description: "The vendored root package and the module node share a name, so the\n" +
+				"dependency graph has a cycle. A change inside the module should flag\n" +
+				"depending packages as changed, not recurse forever (stack overflow).",
+			AllFiles: false,
+		},
+		RepoTest{
 			TestdataFolder: "exportedtesting",
 			Name:           "change in a package with packagename_test test package",
 			Description: "A change to package x that is being tested " +

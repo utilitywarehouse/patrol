@@ -387,10 +387,13 @@ func (r *Repo) flagPackageAsChanged(name string) {
 		return
 	}
 
+	// Mark before recursing: the graph can have cycles (a vendored module's root
+	// package shares its name with the module node its subpackages depend on), and
+	// marking afterwards would recurse forever.
+	pkg.Changed = true
 	for _, d := range pkg.Dependants {
 		r.flagPackageAsChanged(d.Name)
 	}
-	pkg.Changed = true
 }
 
 func (r *Repo) ModuleName() string {
