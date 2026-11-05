@@ -1,0 +1,4 @@
+# example.com/lib v1.0.0
+## explicit
+example.com/lib
+example.com/lib/sub
